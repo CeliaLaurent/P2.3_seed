@@ -13,7 +13,7 @@ https://www.dealii.org/current/doxygen/deal.II/step_1.html https://www.dealii.or
 	- number of levels
 	- number of cells
 	- number of active cells
-3. Test this with all of your meshes.
+3. ​     Test this with all of your meshes.
 4. Modifying an existing meshing function
 	- Immediately after creating a mesh, call its method `reset_all_manifolds()`. What happens now?
 	- Output mesh two as an `svg` file instead of `eps`. Open it in a browser to display it.
