@@ -15,7 +15,11 @@ cmake -DCMAKE_ECLIPSE_VERSION=4.14 -G"Eclipse CDT4 - Unix Makefiles" .
 
 ![add_path](add_path.png)
 
-##### d) configure eclipse to run the executable of the project
+##### d) configure eclipse to build the executable of the project
+
+![configure_build](configure_build.png)
+
+##### e) configure eclipse to run the executable of the project
 
 ![configure_run](configure_run.png)
 
