@@ -37,7 +37,7 @@ cmake -DCMAKE_ECLIPSE_VERSION=4.14 -G"Eclipse CDT4 - Unix Makefiles" .
 
 ![sparsity_patterns](sparsity_patterns.png)
 
-As discussed in class, the pattern 1 (left side) has a larger bandwidth,  meaning that  every line needs data that are much farther away in memory (far from the diagonal) respect to the second (right hand side) pattern which has a lower bandwidth. Consequently the second pattern will allow much faster operations respect to the first pattern.
+As discussed in class, the pattern 1 (left side) has a larger bandwidth,  meaning that at every line the elements whose data are needed are much farther away in memory (far from the diagonal) respect to the second (right hand side) pattern which has a lower bandwidth. Consequently the second pattern will allow much faster operations respect to the first pattern.
 
 Documentation states that:
 
@@ -66,17 +66,17 @@ and for degree 3:
 
 ![FE_3](FE_3.png)
 
-The size of the matrixes increases with the degree of the polynomial, this is visible in the size of the pixels that decrease with the increasing polynomial degree. The sparsity of the data remain unchanged by increasing the polynomial degree. It seems as well that the quantity of non-zero element per line does not increase with the polynomial degree.
+The size of the matrices increases with the degree of the polynomial, this is visible in the size of the pixels that decrease with the increasing polynomial degree. The sparsity of the data remain unchanged by increasing the polynomial degree. It seems as well that the quantity of non-zero element per line does not increase with the polynomial degree.
 
 - ##### How does the pattern change if you use a globally refined (say 3 times) unit square?
 
 - ##### Are these patterns symmetric? Why/why not?
 
-These patterns are symmetric, it can be seen from the symmetry respect to the diagonal of the matrix, and the reason for that is that these matrixes represents the link between the degrees of freedom, that depend on their vicinity, and is hence a symmetric relationship: if A is close enough to B, then B is close enough to A so that they interfere one on the other one.
+These patterns are symmetric, it can be seen from the symmetry respect to the diagonal of the matrix, and the reason for that is that these matrices represents the link between the degrees of freedom, that depend on their vicinity, and is hence a symmetric relationship: if A is close enough to B, then B is close enough to A so that they interfere one on the other one.
 
 - ##### How many entries per row in the sparsity pattern do you expect for a Q1 element (assuming four cells are around each vertex)?
 
-Using a first degree polynomial i expect to have as many rows (and columns) as they are of vertex in the mes, because for first order polynomial there's only one degree of freedom per vetex. The mesh is done of 10 quadrants identicals as the one represented below, which has 15 (excluding those of the upper boundary that belong to the upper quadrant) so that i expect of matrix of size 150 x 150.
+Using a first degree polynomial i expect to have as many rows (and columns) as they are of vertex in the mes, because for first order polynomial there's only one degree of freedom per vertex. The mesh is done of 10 quadrants identical as the one represented below, which has 15 (excluding those of the upper boundary that belong to the upper quadrant) so that i expect of matrix of size 150 x 150.
 
 Then, as illustrated by the representation below, every vertex i sharing an element with other 5, 7, 8, 10 or 12 vertices (depending on the position of that vertex: in a more or less refined area, in the center of the grid or on the border of the domain). That number should then be the number of non-zero entries corresponding to the line (resp column) of the matrix associated to that given vertex.
 
