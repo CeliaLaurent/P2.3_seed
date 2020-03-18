@@ -159,7 +159,7 @@ void Step3<dim>::assemble_system ()
                                    fe_values.JxW (q_index));
 
           for (unsigned int i=0; i<dofs_per_cell; ++i)
-       //     cell_rhs(i) += (fe_values.shape_value (i, q_index) *
+             cell_rhs(i) += (fe_values.shape_value (i, q_index) *
                             1 *
                             fe_values.JxW (q_index));
         }

@@ -19,8 +19,9 @@ cmake -DCMAKE_ECLIPSE_VERSION=4.14 -G"Eclipse CDT4 - Unix Makefiles" .
 
 ![configure_build](configure_build.png)
 
+Then, inside the same Build Targets, click on `Build` to create the first executable, to be referenced in next step.
+
 ##### e) configure eclipse to run the executable of the project
 
 ![configure_run](configure_run.png)
 
-##### 
