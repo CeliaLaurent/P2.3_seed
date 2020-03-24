@@ -4,7 +4,8 @@
 ```
 cd examples/step-2
 make distclean
-cmake -DCMAKE_ECLIPSE_VERSION=4.14 -G"Eclipse CDT4 - Unix Makefiles" .
+cmake -DCMAKE_ECLIPSE_VERSION=4.14 -DDEAL_II_DIR=/home/celia/MHPC/dealii/EXE/lib/cmake/deal.II/ -G"Eclipse CDT4 - Unix Makefiles" .
+
 ```
 
 ##### b) create the Makefile project with existing code

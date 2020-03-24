@@ -72,7 +72,7 @@ In my case boundary id 1 refers to the first face with Neumann boundary conditio
 
 Documentations says:
 
-> Convergence of the mean: A different way to see that the solution  actually converges (to something — we can't tell whether it's really the  correct value!) is to compute the mean of the solution. To this end,  add the following code to `LaplaceProblem::output_results`
+> Convergence of the mean: A different way to see that the solution actually converges (to something — we can't tell whether it's really the  correct value!) is to compute the mean of the solution. To this end,  add the following code to `LaplaceProblem::output_results`
 >
 > ```c++
 > std::cout << "Mean value: "
