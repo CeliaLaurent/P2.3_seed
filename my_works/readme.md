@@ -1,5 +1,9 @@
 #  The Finite Element Method Using deal.II
 
+# *lessons and personal materials*
+
+
+
 ## Lecture 1 : Introduction
 
 - *Deal II presentation*
@@ -22,7 +26,7 @@ Setting a project with the Eclipse IDE : [Eclipse/Setup_Eclipse_Project.md](Ecli
 
 
 
-#### 				Lab01 using step 1 as a base : [lab01/report.md](lab01/report.md)
+#### 				Lab01 : [lab01/report.md](lab01/report.md)
 
 Source code:  [lab01/my-step1/step-1.cc](lab01/my-step1/step-1.cc)
 
@@ -48,7 +52,7 @@ Source code:  [lab01/my-step1/step-1.cc](lab01/my-step1/step-1.cc)
 
   
 
-#### Lab02 using step 2 as a base : [lab02/report.md](lab02/report.md) 
+#### Lab02 : [lab02/report.md](lab02/report.md) 
 
 Source code : [lab02/my-step-2/step-2.cc](lab02/my-step-2/step-2.cc)
 
@@ -78,7 +82,7 @@ Source code : [lab02/my-step-2/step-2.cc](lab02/my-step-2/step-2.cc)
 
 
 
-#### 				Lab03 using step-3 as a base: [lab03/report.md](lab03/report.md)
+#### 				Lab03 : [lab03/report.md](lab03/report.md)
 
 Source code: [lab03/my-step-3/step-3.cc](lab03/my-step-3/step-3.cc)
 
@@ -96,7 +100,7 @@ Source code: [lab03/my-step-3/step-3.cc](lab03/my-step-3/step-3.cc)
 
 
 
-#### Lab 04: step-3to5: **[lab04/report-step3to5.md](lab04/report-step3to5.md)**
+#### Lab 04 : **[lab04/readme.md](lab04/readme.md)**
 
 Source code: [lab04/my-step-3to5/step-3to5.cc](lab04/my-step-3to5/step-3to5.cc)
 
@@ -118,11 +122,11 @@ Source code: [lab04/my-step-3to5/step-3to5.cc](lab04/my-step-3to5/step-3to5.cc)
 
   
 
-#### 			Lab 04: step-5to6 : **[lab04/report-step5to6.md](lab04/report-step5to6.md)**
+#### 			Lab 05: step-5to6 : **[lab05/readme.md](lab05/readme.md)**
 
-- [x] Hanging nodes : [lab04/my-step-5to6/step-5to6-hanging-nodes-only.cc](lab04/my-step-5to6/step-5to6-hanging-nodes-only.cc)
-- [x] A posteriori error estimation using the `KellyErrorEstimator` to predict the regions of the geometry where the solution approximation is inaccurate : [lab04/my-step-5to6/step-5to6-adding-Kelly-error.cc](lab04/my-step-5to6/step-5to6-adding-Kelly-error.cc)
-- [x] Perform local cell marking and refinement using the cell-based estimated error: [lab04/my-step-5to6/step-5to6-final_version_with_error_based_refinement.cc](lab04/my-step-5to6/step-5to6-final_version_with_error_based_refinement.cc)
+- [x] Hanging nodes : [lab05/my-step-5to6/step-5to6-hanging-nodes-only.cc](lab05/my-step-5to6/step-5to6-hanging-nodes-only.cc)
+- [x] A posteriori error estimation using the `KellyErrorEstimator` to predict the regions of the geometry where the solution approximation is inaccurate : [lab05/my-step-5to6/step-5to6-adding-Kelly-error.cc](lab05/my-step-5to6/step-5to6-adding-Kelly-error.cc)
+- [x] Perform local cell marking and refinement using the cell-based estimated error: [lab05/my-step-5to6/step-5to6-final_version_with_error_based_refinement.cc](lab05/my-step-5to6/step-5to6-final_version_with_error_based_refinement.cc)
 
 
 
@@ -133,11 +137,13 @@ Source code: [lab04/my-step-3to5/step-3to5.cc](lab04/my-step-3to5/step-3to5.cc)
 *• the **Thread** and **ThreadGroup** (Posix threads) classes*
 *• the **Workstream** class  (Threaded building blocks)*
 
+#### Lab06 : steps a,b,c
+
 **Source code, step by step :**
 
-- [lab04/my-steps-to-parallel/step-a-implement-MeshWorker-objects.cc](lab04/my-steps-to-parallel/step-a-implement-MeshWorker-objects.cc)
-- [lab04/my-steps-to-parallel/step-b-worker-copier-functions.cc](lab04/my-steps-to-parallel/step-b-worker-copier-functions.cc)
-- [lab04/my-steps-to-parallel/step-c-WorkStream_run_parallel.cc](lab04/my-steps-to-parallel/step-c-WorkStream_run_parallel.cc)
+- [lab06/my-steps-to-parallel/step-a-implement-MeshWorker-objects.cc](lab06/my-steps-to-parallel/step-a-implement-MeshWorker-objects.cc)
+- [lab06/my-steps-to-parallel/step-b-worker-copier-functions.cc](lab06/my-steps-to-parallel/step-b-worker-copier-functions.cc)
+- [lab06/my-steps-to-parallel/step-c-WorkStream_run_parallel.cc](lab06/my-steps-to-parallel/step-c-WorkStream_run_parallel.cc)
 
 
 
@@ -145,10 +151,12 @@ Source code: [lab04/my-step-3to5/step-3to5.cc](lab04/my-step-3to5/step-3to5.cc)
 
 *MPI implementation and replacement of deal-ii linear algebra by the Trilinos or PETSc library* 
 
+#### Lab06 : steps d, e
+
 **Source code, step by step :**
 
-- [lab04/my-steps-to-parallel/step-d-MPI-and-PETSc.cc](lab04/my-steps-to-parallel/step-d-MPI-and-PETSc.cc)
-- [lab04/my-steps-to-parallel/step-e-fix-locally_relevant_solution_plus_parallel_output_plus_system_compression.cc](lab04/my-steps-to-parallel/step-e-fix-locally_relevant_solution_plus_parallel_output_plus_system_compression.cc)
+- [lab06/my-steps-to-parallel/step-d-MPI-and-PETSc.cc](lab06/my-steps-to-parallel/step-d-MPI-and-PETSc.cc)
+- [lab06/my-steps-to-parallel/step-e-fix-locally_relevant_solution_plus_parallel_output_plus_system_compression.cc](lab06/my-steps-to-parallel/step-e-fix-locally_relevant_solution_plus_parallel_output_plus_system_compression.cc)
 
 For this section compilations and runs were done using the docker container of deal ii (see [Docker.md](Docker.md) for instructions)
 

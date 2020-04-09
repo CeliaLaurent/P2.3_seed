@@ -10,19 +10,19 @@ cmake -DCMAKE_ECLIPSE_VERSION=4.14 -DDEAL_II_DIR=/home/celia/MHPC/dealii/EXE/lib
 
 ##### b) create the Makefile project with existing code
 
-![create_project](create_project.png)
+![create_project](IMG/create_project.png)
 
 ##### c) add path to deal II include directory 
 
-![add_path](add_path.png)
+![add_path](IMG/add_path.png)
 
 ##### d) configure eclipse to build the executable of the project
 
-![configure_build](configure_build.png)
+![configure_build](IMG/configure_build.png)
 
 Then, inside the same Build Targets, click on `Build` to create the first executable, to be referenced in next step.
 
 ##### e) configure eclipse to run the executable of the project
 
-![configure_run](configure_run.png)
+![configure_run](IMG/configure_run.png)
 

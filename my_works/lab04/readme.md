@@ -1,4 +1,4 @@
-## step-3to5 : Global and local error computation and estimation
+### step-3to5 : Global and local error computation and estimation
 The transformation of step 3 to step 5 is made in`step-3to5.cc` which implements the problem posed in step 3, plus  the computation and extraction of the norms, starting from 3 initial refinements, and performing 6 more refinements, for the functions   
 
 ```c++

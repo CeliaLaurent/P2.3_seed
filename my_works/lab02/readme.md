@@ -9,29 +9,7 @@ https://www.dealii.org/current/doxygen/deal.II/step_2.html https://www.dealii.or
 ### Using step-2 as a base:
 #### 1. Compile and run this tutorial, and inspect at the output.
 
-##### a) creating makefiles for eclipse IDE
-
-```
-cd examples/step-2
-make distclean
-cmake -DCMAKE_ECLIPSE_VERSION=4.14 -G"Eclipse CDT4 - Unix Makefiles" .
-```
-
-##### b) create the Makefile project with existing code
-
-![create_project](../Eclipse/create_project.png)
-
-##### c) add path to deal II include directory 
-
-![add_path](../Eclipse/add_path.png)
-
-##### d) configure eclipse to build the executable of the project
-
-![configure_build](../Eclipse/configure_build.png)
-
-##### e) configure eclipse to run the executable of the project
-
-![configure_run](../Eclipse/configure_run.png)
+The procedure employed to set-up the Eclipse project is described in  **[../Eclipse.md](../Eclipse.md)** .
 
 #### 2. Look at the generated sparsity patterns (Firefox, for example)
 
