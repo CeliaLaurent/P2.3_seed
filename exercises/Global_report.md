@@ -128,6 +128,13 @@ Source code: [lab04/my-step-3to5/step-3to5.cc](lab04/my-step-3to5/step-3to5.cc)
 
 ## Lecture 7: Shared Memory Parallelization
 
+*Create independent threaded tasks using :* 
+
+*• the **Thread** and **ThreadGroup** (Posix threads) classes*
+*• the **Workstream** class  (Threaded building blocks)*
+
+**Source code, step by step :**
+
 - [lab04/my-steps-to-parallel/step-a-implement-MeshWorker-objects.cc](lab04/my-steps-to-parallel/step-a-implement-MeshWorker-objects.cc)
 - [lab04/my-steps-to-parallel/step-b-worker-copier-functions.cc](lab04/my-steps-to-parallel/step-b-worker-copier-functions.cc)
 - [lab04/my-steps-to-parallel/step-c-WorkStream_run_parallel.cc](lab04/my-steps-to-parallel/step-c-WorkStream_run_parallel.cc)
@@ -136,10 +143,14 @@ Source code: [lab04/my-step-3to5/step-3to5.cc](lab04/my-step-3to5/step-3to5.cc)
 
 ## Lecture 8 and 9 : MPI Parallelization
 
-- [x] Using the docker container of deal ii (see [Docker.md](Docker.md))
+*MPI implementation and replacement of deal-ii linear algebra by the Trilinos or PETSc library* 
+
+**Source code, step by step :**
 
 - [lab04/my-steps-to-parallel/step-d-MPI-and-PETSc.cc](lab04/my-steps-to-parallel/step-d-MPI-and-PETSc.cc)
 - [lab04/my-steps-to-parallel/step-e-fix-locally_relevant_solution_plus_parallel_output_plus_system_compression.cc](lab04/my-steps-to-parallel/step-e-fix-locally_relevant_solution_plus_parallel_output_plus_system_compression.cc)
+
+For this section compilations and runs were done using the docker container of deal ii (see [Docker.md](Docker.md) for instructions)
 
 
 
@@ -148,5 +159,7 @@ Source code: [lab04/my-step-3to5/step-3to5.cc](lab04/my-step-3to5/step-3to5.cc)
 This additional work consists in the transformation of the step-35 code, leaving aside the shared-memory parallelization (workstream), and concentrating on the following objectives:
 
 - [ ] replacement the deal-II linear algebra by the Trilinos library
-- [ ] implementation of the MPI parallelisation 
+- [ ] implementation of the MPI parallelization 
+
+The report of this work is in the file [project/step-35.md](project/step-35.md) and source code is in directory [project/step-35/](project/step-35)
 
