@@ -26,7 +26,7 @@ Setting a project with the Eclipse IDE : [Eclipse/Setup_Eclipse_Project.md](Ecli
 
 
 
-#### 				Lab01 : [lab01/report.md](lab01/report.md)
+#### 				Lab01 : [lab01/readme.md](lab01/report.md)
 
 Source code:  [lab01/my-step1/step-1.cc](lab01/my-step1/step-1.cc)
 
@@ -52,7 +52,7 @@ Source code:  [lab01/my-step1/step-1.cc](lab01/my-step1/step-1.cc)
 
   
 
-#### Lab02 : [lab02/report.md](lab02/report.md) 
+#### Lab02 : [lab02/readme.md](lab02/report.md) 
 
 Source code : [lab02/my-step-2/step-2.cc](lab02/my-step-2/step-2.cc)
 
@@ -82,7 +82,7 @@ Source code : [lab02/my-step-2/step-2.cc](lab02/my-step-2/step-2.cc)
 
 
 
-#### 				Lab03 : [lab03/report.md](lab03/report.md)
+#### 				Lab03 : [lab03/readme.md](lab03/report.md)
 
 Source code: [lab03/my-step-3/step-3.cc](lab03/my-step-3/step-3.cc)
 
@@ -169,5 +169,5 @@ This additional work consists in the transformation of the step-35 code, leaving
 - [ ] replacement the deal-II linear algebra by the Trilinos library
 - [ ] implementation of the MPI parallelization 
 
-The report of this work is in the file [project/step-35.md](project/step-35.md) and source code is in directory [project/step-35/](project/step-35)
+The report of this work is in the file [project/readme.md](project/step-35.md) and source code is in directory [project/step-35/](project/step-35)
 
