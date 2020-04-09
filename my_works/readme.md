@@ -26,7 +26,7 @@ Setting a project with the Eclipse IDE : [Eclipse/Setup_Eclipse_Project.md](Ecli
 
 
 
-#### 				Lab01 : [lab01/readme.md](lab01/report.md)
+#### 				Lab01 : [lab01/readme.md](lab01/readme.md)
 
 Source code:  [lab01/my-step1/step-1.cc](lab01/my-step1/step-1.cc)
 
@@ -52,7 +52,7 @@ Source code:  [lab01/my-step1/step-1.cc](lab01/my-step1/step-1.cc)
 
   
 
-#### Lab02 : [lab02/readme.md](lab02/report.md) 
+#### Lab02 : [lab02/readme.md](lab02/readme.md) 
 
 Source code : [lab02/my-step-2/step-2.cc](lab02/my-step-2/step-2.cc)
 
@@ -82,7 +82,7 @@ Source code : [lab02/my-step-2/step-2.cc](lab02/my-step-2/step-2.cc)
 
 
 
-#### 				Lab03 : [lab03/readme.md](lab03/report.md)
+#### 				Lab03 : [lab03/readme.md](lab03/readme.md)
 
 Source code: [lab03/my-step-3/step-3.cc](lab03/my-step-3/step-3.cc)
 
