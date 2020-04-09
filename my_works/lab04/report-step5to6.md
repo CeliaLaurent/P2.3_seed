@@ -14,11 +14,11 @@ This source code implements the consideration of the hanging nodes.
 
 To observe the effects of the various steps, a local refinement was introduced, and the resulting solution visualized with paraview:
 
-![1584716359664](1584716359664.png)
+![step-3to6-a](step-3to6-a.png)
 
 if the `constraints.distribute(solution);` is commented-out, as expected the solution is consistent on the hanging nodes added at every successive refinement.
 
-![1584715770172](1584715770172.png)
+![step-3to6-b](step-3to6-b.png)
 
 
 
@@ -26,11 +26,11 @@ if the `constraints.distribute(solution);` is commented-out, as expected the sol
 
 using the same local refinement as above, the error_estimator field grows proportionally to the amplitude of the solution and the size of the cell (in the next fig the warping by scalar is made on the error_estimator)
 
-![1584720771010](1584720771010.png)
+![step-3to6-c](step-3to6-c.png)
 
 while with the global refinement the expected dependency on the solution intensity is observed (plotting warp by `solution`, edges hided because with 3 initials + other 5 cycles of refinement they are too dense to see the colormap) : 
 
-![1584721141158](1584721141158.png)
+![step-3to6-d](step-3to6-d.png)
 
 and the error tables indicate:
 
@@ -48,7 +48,7 @@ cells dofs    u_L2_norm      u_H1_norm
 
 Using finally the refinement based on the Kelly error_estimator (plotting warp by `solution`) :
 
-![1584722134052](1584722134052.png)
+![step-3to6-e](step-3to6-e.png)
 
 and the error tables indicate:
 
