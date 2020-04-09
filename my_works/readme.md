@@ -10,7 +10,7 @@
 - *options for installation*
 - *IDE and Paraview VTK Viewer* :
 
-Setting a project with the Eclipse IDE : [Eclipse/Setup_Eclipse_Project.md](Eclipse/Setup_Eclipse_Project.md)
+Setting a project with the Eclipse IDE : [Eclipse.md](Eclipse.md)
 
 
 
