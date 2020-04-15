@@ -33,7 +33,15 @@
 #include <deal.II/base/parallel.h>
 #include <deal.II/base/utilities.h>
 #include <deal.II/base/conditional_ostream.h>
+// MPI and linear algebra libraries
+#include <deal.II/base/mpi.h>
+#include <deal.II/base/conditional_ostream.h>
+#include <deal.II/base/utilities.h>
 
+#include <deal.II/distributed/tria.h>
+
+#include <deal.II/lac/generic_linear_algebra.h>
+// 
 #include <deal.II/lac/vector.h>
 #include <deal.II/lac/sparse_matrix.h>
 #include <deal.II/lac/dynamic_sparsity_pattern.h>
@@ -73,6 +81,9 @@
 namespace Step35
 {
   using namespace dealii;
+
+  namespace LA  { using namespace dealii::LinearAlgebraTrilinos; }
+  ConditionalOStream pout;
 
   // @sect3{Run time parameters}
   //
@@ -438,6 +449,8 @@ namespace Step35
     void run(const bool verbose = false, const unsigned int n_plots = 10);
 
   protected:
+    MPI_Comm communicator;
+
     RunTimeParameters::Method type;
 
     const unsigned int deg;
@@ -461,36 +474,36 @@ namespace Step35
     QGauss<dim> quadrature_pressure;
     QGauss<dim> quadrature_velocity;
 
-    SparsityPattern sparsity_pattern_velocity;
-    SparsityPattern sparsity_pattern_pressure;
-    SparsityPattern sparsity_pattern_pres_vel;
+  //SparsityPattern sparsity_pattern_velocity; 
+  //SparsityPattern sparsity_pattern_pressure;
+  //SparsityPattern sparsity_pattern_pres_vel;
 
-    SparseMatrix<double> vel_Laplace_plus_Mass;
-    SparseMatrix<double> vel_it_matrix[dim];
-    SparseMatrix<double> vel_Mass;
-    SparseMatrix<double> vel_Laplace;
-    SparseMatrix<double> vel_Advection;
-    SparseMatrix<double> pres_Laplace;
-    SparseMatrix<double> pres_Mass;
-    SparseMatrix<double> pres_Diff[dim];
-    SparseMatrix<double> pres_iterative;
+    LA::MPI::SparseMatrix vel_Laplace_plus_Mass;
+    LA::MPI::SparseMatrix vel_it_matrix[dim];
+    LA::MPI::SparseMatrix vel_Mass;
+    LA::MPI::SparseMatrix vel_Laplace;
+    LA::MPI::SparseMatrix vel_Advection;
+    LA::MPI::SparseMatrix pres_Laplace;
+    LA::MPI::SparseMatrix pres_Mass;
+    LA::MPI::SparseMatrix pres_Diff[dim];
+    LA::MPI::SparseMatrix pres_iterative;
 
-    Vector<double> pres_n;
-    Vector<double> pres_n_minus_1;
-    Vector<double> phi_n;
-    Vector<double> phi_n_minus_1;
-    Vector<double> u_n[dim];
-    Vector<double> u_n_minus_1[dim];
-    Vector<double> u_star[dim];
-    Vector<double> force[dim];
-    Vector<double> v_tmp;
-    Vector<double> pres_tmp;
-    Vector<double> rot_u;
+    LA::MPI::Vector pres_n;
+    LA::MPI::Vector pres_n_minus_1;
+    LA::MPI::Vector phi_n;
+    LA::MPI::Vector phi_n_minus_1;
+    LA::MPI::Vector u_n[dim];
+    LA::MPI::Vector u_n_minus_1[dim];
+    LA::MPI::Vector u_star[dim];
+    LA::MPI::Vector force[dim];
+    LA::MPI::Vector v_tmp;
+    LA::MPI::Vector pres_tmp;
+    LA::MPI::Vector rot_u;
 
-    SparseILU<double>   prec_velocity[dim];
-    SparseILU<double>   prec_pres_Laplace;
-    SparseDirectUMFPACK prec_mass;
-    SparseDirectUMFPACK prec_vel_mass;
+    LA::MPI::PreconditionILU  prec_velocity[dim];
+    LA::MPI::PreconditionILU  prec_pres_Laplace;
+    LA::MPI::PreconditionILU  prec_mass;
+    LA::MPI::PreconditionILU  prec_vel_mass;
 
     DeclException2(ExcInvalidTimeStep,
                    double,
@@ -683,6 +696,7 @@ namespace Step35
   NavierStokesProjection<dim>::NavierStokesProjection(
     const RunTimeParameters::Data_Storage &data)
     : type(data.form)
+    , communicator(MPI_COMM_WORLD)
     , deg(data.pressure_degree)
     , dt(data.dt)
     , t_0(data.initial_time)
@@ -703,7 +717,7 @@ namespace Step35
     , vel_diag_strength(data.vel_diag_strength)
   {
     if (deg < 1)
-      std::cout
+      pout
         << " WARNING: The chosen pair of finite element spaces is not stable."
         << std::endl
         << " The obtained results will be nonsense" << std::endl;
@@ -735,9 +749,9 @@ namespace Step35
       grid_in.read_ucd(file);
     }
 
-    std::cout << "Number of refines = " << n_refines << std::endl;
+    pout << "Number of refines = " << n_refines << std::endl;
     triangulation.refine_global(n_refines);
-    std::cout << "Number of active cells: " << triangulation.n_active_cells()
+    pout << "Number of active cells: " << triangulation.n_active_cells()
               << std::endl;
 
     boundary_ids = triangulation.get_boundary_ids();
@@ -766,7 +780,7 @@ namespace Step35
     v_tmp.reinit(dof_handler_velocity.n_dofs());
     rot_u.reinit(dof_handler_velocity.n_dofs());
 
-    std::cout << "dim (X_h) = " << (dof_handler_velocity.n_dofs() * dim) //
+    pout << "dim (X_h) = " << (dof_handler_velocity.n_dofs() * dim) //
               << std::endl                                               //
               << "dim (M_h) = " << dof_handler_pressure.n_dofs()         //
               << std::endl                                               //
@@ -975,7 +989,7 @@ namespace Step35
   void NavierStokesProjection<dim>::run(const bool         verbose,
                                         const unsigned int output_interval)
   {
-    ConditionalOStream verbose_cout(std::cout, verbose);
+    ConditionalOStream verbose_cout(pout, verbose);
 
     const auto n_steps = static_cast<unsigned int>((T - t_0) / dt);
     vel_exact.set_time(2. * dt);
@@ -987,7 +1001,7 @@ namespace Step35
             verbose_cout << "Plotting Solution" << std::endl;
             output_results(n);
           }
-        std::cout << "Step = " << n << " Time = " << (n * dt) << std::endl;
+        pout << "Step = " << n << " Time = " << (n * dt) << std::endl;
         verbose_cout << "  Interpolating the velocity " << std::endl;
 
         interpolate_velocity();
@@ -1102,8 +1116,9 @@ namespace Step35
       {
         if (reinit_prec)
           prec_velocity[d].initialize(vel_it_matrix[d],
-                                      SparseILU<double>::AdditionalData(
-                                        vel_diag_strength, vel_off_diagonals));
+                                   LA::MPI::PreconditionILU::AdditionalData::AdditionalData() );
+                                   //   SparseILU<double>::AdditionalData(
+                                   //     vel_diag_strength, vel_off_diagonals));
         tasks += Threads::new_task(
           &NavierStokesProjection<dim>::diffusion_component_solve, *this, d);
       }
@@ -1232,11 +1247,12 @@ namespace Step35
 
     if (reinit_prec)
       prec_pres_Laplace.initialize(pres_iterative,
-                                   SparseILU<double>::AdditionalData(
-                                     vel_diag_strength, vel_off_diagonals));
+                                   LA::MPI::PreconditionILU::AdditionalData::AdditionalData() );
+                                   //SparseILU<double>::AdditionalData(
+                                   //  vel_diag_strength, vel_off_diagonals));
 
     SolverControl solvercontrol(vel_max_its, vel_eps * pres_tmp.l2_norm());
-    SolverCG<>    cg(solvercontrol);
+    LA::SolverCG    cg(solvercontrol);
     cg.solve(pres_iterative, phi_n, pres_tmp, prec_pres_Laplace);
 
     phi_n *= 1.5 / dt;
@@ -1425,10 +1441,13 @@ namespace Step35
 
 // The main function looks very much like in all the other tutorial programs, so
 // there is little to comment on here:
-int main()
+int main(int argc,char **argv)
 {
   try
     {
+      Utilities::MPI::MPI_InitFinalize mpi_initialization ( 
+           argc, argv, -1 );  // to use the maximum number of threads use max_num_threads=-1 :
+    
       using namespace dealii;
       using namespace Step35;
 
@@ -1465,7 +1484,7 @@ int main()
                 << std::endl;
       return 1;
     }
-  std::cout << "----------------------------------------------------"
+  pout << "----------------------------------------------------"
             << std::endl
             << "Apparently everything went fine!" << std::endl
             << "Don't forget to brush your teeth :-)" << std::endl
