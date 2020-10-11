@@ -30,7 +30,7 @@ Setting a project with the Eclipse IDE : [Eclipse.md](Eclipse.md)
 
 Source code:  [lab01/my-step1/step-1.cc](lab01/my-step1/step-1.cc)
 
-- [x] Compiling and running with Eclipse (see exercises/Eclipse/Eclipse.md)
+- [x] Compiling and running with Eclipse (see [Eclipse.md](Eclipse.md))
 
 - [x] Write a helper function
 
@@ -162,11 +162,11 @@ For this section compilations and runs were done using the docker container of d
 
 
 
-## Final Project starting from step-35 :
+## Final Project starting from step-35
 
 This additional work consists in the transformation of the step-35 code, leaving aside the shared-memory parallelization (workstream), and concentrating on the following objectives:
 
-- [ ] replacement the deal-II linear algebra by the Trilinos library
+- [ ] replacement of the deal-II linear algebra by the Trilinos library
 - [ ] implementation of the MPI parallelization 
 
 The report of this work is in the file [project/readme.md](project/step-35.md) and source code is in directory [project/step-35/](project/step-35)
