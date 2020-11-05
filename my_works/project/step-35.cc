@@ -817,7 +817,7 @@ namespace Step35
   template <int dim>
   void NavierStokesProjection<dim>::initialize()
   {
-    pout << "----- initialize ---------" << std::endl;
+    pout << "----- initialize pressure and velocity fields ---------" << std::endl;
     vel_Laplace_plus_Mass = 0.;
     vel_Laplace_plus_Mass.add(1. / Re, vel_Laplace);
     vel_Laplace_plus_Mass.add(1.5 / dt, vel_Mass);
@@ -859,8 +859,9 @@ namespace Step35
   template <int dim>
   void NavierStokesProjection<dim>::initialize_velocity_matrices()
   {
-    pout << "------------- initialize velocity matrixes ------------" << std::endl;
+    pout << "------------- set boundary constraints on velocity ------------" << std::endl;
     set_boundary_constraints_velocity();
+    pout << "------------- initialize velocity matrixes ------------" << std::endl;
 
       DynamicSparsityPattern dsp(dof_handler_velocity.n_dofs(),
                                  dof_handler_velocity.n_dofs());
@@ -875,19 +876,19 @@ namespace Step35
                                communicator,
                                locally_relevant_velocity_dofs);
 
-    pout << "initialize vel_Laplace_plus_Mass" << std::endl;
+  //pout << "initialize vel_Laplace_plus_Mass" << std::endl;
     vel_Laplace_plus_Mass.reinit(locally_owned_velocity_dofs,dsp,communicator);
 
     for (unsigned int d = 0; d < dim; ++d){
-      pout << "initialize vel_it_matrix[" << d << "]" << std::endl;
+    //pout << "initialize vel_it_matrix[" << d << "]" << std::endl;
       vel_it_matrix[d].reinit(locally_owned_velocity_dofs,dsp,communicator);
       }
 
-    pout << "initialize vel_Mass" << std::endl;
+  //pout << "initialize vel_Mass" << std::endl;
     vel_Mass.reinit(locally_owned_velocity_dofs,dsp,communicator);
-    pout << "initialize vel_Laplace" << std::endl;
+  //pout << "initialize vel_Laplace" << std::endl;
     vel_Laplace.reinit(locally_owned_velocity_dofs,dsp,communicator);
-    pout << "initialize vel_Advection" << std::endl;
+  //pout << "initialize vel_Advection" << std::endl;
     vel_Advection.reinit(locally_owned_velocity_dofs,dsp,communicator);
   }
 
@@ -896,8 +897,9 @@ namespace Step35
   template <int dim>
   void NavierStokesProjection<dim>::initialize_pressure_matrices()
   {
-    pout << "------------- initialize pressure matrixes ------------" << std::endl;
+    pout << "------------- set boundary constraints on pressure ------------" << std::endl;
     set_boundary_constraints_pressure();
+    pout << "------------- initialize pressure matrixes ------------" << std::endl;
     DynamicSparsityPattern dsp(dof_handler_pressure.n_dofs(),
                                dof_handler_pressure.n_dofs());
     DoFTools::make_sparsity_pattern(dof_handler_pressure,
@@ -910,11 +912,11 @@ namespace Step35
             communicator,
             locally_relevant_pressure_dofs                             
             );
-    pout << "initialize pres_Laplace" << std::endl;
+  //pout << "initialize pres_Laplace" << std::endl;
     pres_Laplace.reinit(locally_owned_pressure_dofs,dsp,communicator);
-    pout << "initialize pres_iterative" << std::endl;
+  //pout << "initialize pres_iterative" << std::endl;
     pres_iterative.reinit(locally_owned_pressure_dofs,dsp,communicator);
-    pout << "initialize pres_Mass" << std::endl;
+  //pout << "initialize pres_Mass" << std::endl;
     pres_Mass.reinit(locally_owned_pressure_dofs,dsp,communicator);
   }
 
@@ -939,7 +941,7 @@ namespace Step35
                    communicator,                                                                                                 
                    locally_relevant_velocity_dofs);                           // const IndexSet &  	my_range 
 
-    pout << "init task and scratch data" << std::endl;
+  //pout << "init task and scratch data" << std::endl;
     InitGradPerTaskData per_task_data(0,
                                       fe_velocity.dofs_per_cell,
                                       fe_pressure.dofs_per_cell);
@@ -952,13 +954,13 @@ namespace Step35
 
     for (unsigned int d = 0; d < dim; ++d)
       {
-        pout << "init pres_Diff dim " <<d<< std::endl;
+      //pout << "init pres_Diff dim " <<d<< std::endl;
         pres_Diff[d].reinit(locally_owned_velocity_dofs,  // const IndexSet & local_rows
                             locally_owned_pressure_dofs,  // const IndexSet & local_columns
                             dsp,                          // const SparsityPatternType & sparsity_pattern
                             communicator);
         per_task_data.d = d;
-        pout << "first WorkStream run for dim " <<d<< std::endl;
+      //pout << "first WorkStream run for dim " <<d<< std::endl;
         WorkStream::run(
           IteratorPair(IteratorTuple(CellFilter(IteratorFilters::LocallyOwnedCell(), dof_handler_velocity.begin_active()),
                                      CellFilter(IteratorFilters::LocallyOwnedCell(), dof_handler_pressure.begin_active())  )),
@@ -970,7 +972,7 @@ namespace Step35
           scratch_data,
           per_task_data);
       }
-    pout << "done init gradients" << std::endl;
+  //pout << "done init gradients" << std::endl;
   }
 
   template <int dim>
@@ -1049,7 +1051,7 @@ namespace Step35
   //        output_results(n);
   //      }
         pout << "---------- Step = " << n << " Time = " << (n * dt) << "--------------" << std::endl;
-        verbose_cout << "  Interpolating the velocity (Extrapolation step) " << std::endl;
+      //verbose_cout << "  Interpolating the velocity (Extrapolation step) " << std::endl;
 
         interpolate_velocity();
         verbose_cout << "  Diffusion Step" << std::endl;
@@ -1073,7 +1075,7 @@ namespace Step35
   {
     for (unsigned int d = 0; d < dim; ++d)
       {
-        pout << "     computing u_star for dim "<< d << std::endl;
+      //pout << "     computing u_star for dim "<< d << std::endl;
         u_star[d].equ(2., u_n[d]);
         u_star[d] -= u_n_minus_1[d];
       }
@@ -1096,17 +1098,22 @@ namespace Step35
 
   template <int dim>
   void NavierStokesProjection<dim>::set_boundary_constraints_velocity()
-  {
+  { 
     pout << "    set boundary constraints on velocity " << std::endl;
+
+    constraints_velocity.clear();
+    //FEValuesExtractors::Vector velocities(0);
+    DoFTools::make_hanging_node_constraints(dof_handler_velocity,
+                                                constraints_velocity);
     for (unsigned int d = 0; d < dim; ++d)
       {
         
-        constraints_velocity.clear();
-        //FEValuesExtractors::Vector velocities(0);
-        DoFTools::make_hanging_node_constraints(dof_handler_velocity,
-                                                constraints_velocity);
+      //constraints_velocity.clear();
+      ////FEValuesExtractors::Vector velocities(0);
+      //DoFTools::make_hanging_node_constraints(dof_handler_velocity,
+      //                                        constraints_velocity);
         vel_exact.set_component(d);
-        pout << "      interpolate boundaries dim " << d << std::endl;
+      //pout << "      interpolate boundaries dim " << d << std::endl;
         // Like hanging nodes, Dirichlet boundary conditions are as well a 
         // constraint on the degrees of freedom, we use VectorTools::interpolate_boundary_values()
         // to return boundary conditions constraints and store them in 'constraints_velocity'
@@ -1159,8 +1166,9 @@ namespace Step35
                   Assert(false, ExcNotImplemented());
               }
           }
-        constraints_velocity.close();
+      //constraints_velocity.close();
       } 
+      constraints_velocity.close();
   }
 
 
@@ -1177,7 +1185,7 @@ namespace Step35
 
     for (unsigned int d = 0; d < dim; ++d)
       {
-        pout << "    diffusion of dim " << d << std::endl;
+      ///out << "    diffusion of dim " << d << std::endl;
         force[d] = 0.;
         v_tmp.equ(2. / dt, u_n[d]);
         v_tmp.add(-.5 / dt, u_n_minus_1[d]);
@@ -1194,7 +1202,7 @@ namespace Step35
       //                                   vel_it_matrix[d],// system_matrix
       //                                   u_n[d],          // solution
       //                                   force[d],true);       // rhs
-        pout << "      diffusion of dim " << d << " done" << std::endl;
+      //pout << "      diffusion of dim " << d << " done" << std::endl;
       }
 
 
@@ -1202,15 +1210,16 @@ namespace Step35
     for (unsigned int d = 0; d < dim; ++d)
       {
         if (reinit_prec)
+          pout << "     reinit prec_velocity[" <<d<<"]"<< std::endl;
           prec_velocity[d].initialize(vel_it_matrix[d],
-                                   LA::MPI::PreconditionILU::AdditionalData::AdditionalData() );
+                                   LA::MPI::PreconditionILU::AdditionalData::AdditionalData(vel_diag_strength, vel_off_diagonals) );
                                    //   SparseILU<double>::AdditionalData(
                                    //     vel_diag_strength, vel_off_diagonals));
         tasks += Threads::new_task(
           &NavierStokesProjection<dim>::diffusion_component_solve, *this, d);
       }
     tasks.join_all();
-    pout << "      -------- diffusion_step done ---------" << std::endl;
+  //pout << "      -------- diffusion_step done ---------" << std::endl;
   }
 
 
@@ -1219,19 +1228,17 @@ namespace Step35
   void
   NavierStokesProjection<dim>::diffusion_component_solve(const unsigned int d)
   {
-    pout << "      Navier Stokes Projection:: diffusion_component_solve dim " << d << std::endl;
+  //pout << "      Navier Stokes Projection:: diffusion_component_solve dim " << d << std::endl;
     SolverControl solver_control(vel_max_its, vel_eps * force[d].l2_norm());
-    //LA::SolverGMRES gmres(solver_control,
-    //                  LA::SolverGMRES::AdditionalData(vel_Krylov_size));
-    //SolverGMRES<TrilinosWrappers::MPI::BlockVector> gmres(solver_control,
-    //                                        SolverGMRES<TrilinosWrappers::MPI::BlockVector>::AdditionalData(vel_Krylov_size));
-    SolverGMRES<LA::MPI::Vector> gmres(solver_control,
-                                            SolverGMRES<LA::MPI::Vector>::AdditionalData(vel_Krylov_size));
-    pout << "        solve diffusion equation for dim " << d <<  std::endl;
+    LA::SolverGMRES gmres(solver_control,
+                          LA::SolverGMRES::AdditionalData(vel_Krylov_size));
+  //SolverGMRES<LA::MPI::Vector> gmres(solver_control,
+  //                    SolverGMRES<LA::MPI::Vector>::AdditionalData(vel_Krylov_size));
+    pout << "        solve diffusion equation with GMRES for dim " << d <<  std::endl;
     gmres.solve(vel_it_matrix[d], u_n[d], force[d], prec_velocity[d]);
     pout << "        and distribute constraints on velocity solution for dim " << d << std::endl;
     constraints_velocity.distribute (u_n[d]);
-    pout << "      Navier Stokes Projection:: diffusion_component_solve dim " << d << " done " << std::endl;
+  //pout << "      Navier Stokes Projection:: diffusion_component_solve dim " << d << " done " << std::endl;
   }
 
 
@@ -1245,7 +1252,7 @@ namespace Step35
   template <int dim>
   void NavierStokesProjection<dim>::assemble_advection_term()
   {
-    pout << "    assemble_advection_term" << std::endl;
+  //pout << "    assemble_advection_term" << std::endl;
     vel_Advection = 0.;
     AdvectionPerTaskData data(fe_velocity.dofs_per_cell);
     AdvectionScratchData scratch(fe_velocity,
@@ -1253,7 +1260,7 @@ namespace Step35
                                  update_values | update_JxW_values |
                                    update_gradients);
     //decltype(CellFilter(IteratorFilters::LocallyOwnedCell(), dof_handler_velocity.begin_active()))::foo= 1;
-   pout << "      WorkStream::run extrapolation step" << std::endl;
+ //pout << "      WorkStream::run extrapolation step" << std::endl;
     WorkStream::run(
       CellFilter(IteratorFilters::LocallyOwnedCell(), dof_handler_velocity.begin_active() ),
       CellFilter(IteratorFilters::LocallyOwnedCell(), dof_handler_velocity.end() ),
@@ -1262,7 +1269,7 @@ namespace Step35
       &NavierStokesProjection<dim>::copy_advection_local_to_global,
       scratch,
       data);
-   pout << "      assemble_advection_term done." << std::endl;
+ //pout << "      assemble_advection_term done." << std::endl;
   }
 
 
@@ -1334,7 +1341,7 @@ namespace Step35
   template <int dim>
   void NavierStokesProjection<dim>::set_boundary_constraints_pressure()
   {
-    pout << "    set boundary constraints on pressure " << std::endl;
+    //pout << "    set boundary constraints on pressure " << std::endl;
     constraints_pressure.clear();
     DoFTools::make_hanging_node_constraints(dof_handler_pressure,
                                                 constraints_pressure);
@@ -1370,7 +1377,8 @@ namespace Step35
 
     SolverControl solvercontrol(vel_max_its, vel_eps * pres_tmp.l2_norm());
     LA::SolverCG    cg(solvercontrol);
-    cg.solve(pres_iterative, phi_n, pres_tmp, prec_pres_Laplace);
+    pout << "        solve pressure projection step with LA::SolverCG " <<  std::endl;
+    //cg.solve(pres_iterative, phi_n, pres_tmp, prec_pres_Laplace);
 
     phi_n *= 1.5 / dt;
   }
@@ -1395,10 +1403,11 @@ namespace Step35
           pres_n += phi_n;
           break;
         case RunTimeParameters::Method::rotational:
-          if (reinit_prec)
-            prec_mass.initialize(pres_Mass);
+        //if (reinit_prec)
+        //  prec_mass.initialize(pres_Mass);
           pres_n = pres_tmp;
-          prec_mass.solve(pres_n,pres_tmp);
+          pout << "        get new pressure with TrilinosWrappers::SolverDirect " <<  std::endl;
+        //prec_mass.solve(pres_n,pres_tmp);
           pres_n.sadd(1. / Re, 1., pres_n_minus_1);
           pres_n += phi_n;
           break;
