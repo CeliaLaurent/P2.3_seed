@@ -480,6 +480,10 @@ namespace Step35
     QGauss<dim> quadrature_pressure;
     QGauss<dim> quadrature_velocity;
 
+    DynamicSparsityPattern sparsity_pattern_velocity;
+    DynamicSparsityPattern sparsity_pattern_pressure;
+    DynamicSparsityPattern sparsity_pattern_pres_vel;
+
     LA::MPI::SparseMatrix vel_Laplace_plus_Mass;
     LA::MPI::SparseMatrix vel_it_matrix[dim];
     LA::MPI::SparseMatrix vel_Mass;
@@ -505,6 +509,10 @@ namespace Step35
 
     LA::MPI::PreconditionILU  prec_velocity[dim];
     LA::MPI::PreconditionILU  prec_pres_Laplace;
+  //SolverControl solver_control(1, 0.0);
+  //TrilinosWrappers::SolverDirect::AdditionalData solver_data(false);  
+  //TrilinosWrappers::SolverDirect  prec_vel_mass(solver_control,solver_data);
+  //TrilinosWrappers::SolverDirect  prec_mass(solver_control,solver_data);
 
     IndexSet locally_owned_velocity_dofs;
     IndexSet locally_owned_pressure_dofs;
@@ -862,34 +870,39 @@ namespace Step35
     pout << "------------- set boundary constraints on velocity ------------" << std::endl;
     set_boundary_constraints_velocity();
     pout << "------------- initialize velocity matrixes ------------" << std::endl;
-
-      DynamicSparsityPattern dsp(dof_handler_velocity.n_dofs(),
+    
+      sparsity_pattern_velocity.reinit(dof_handler_velocity.n_dofs(),
                                  dof_handler_velocity.n_dofs());
       DoFTools::make_sparsity_pattern(dof_handler_velocity, 
-                                      dsp,
+                                      sparsity_pattern_velocity,
                                       constraints_velocity, // passing constraints at this step avoid the need to call later  AffineConstraints::condense() 
                                       /*keep_constrained_dofs = */ true  // true because we wont use AffineConstraints::distribute_local_to_global()
                                       );
-
-    SparsityTools::distribute_sparsity_pattern(   dsp,
+   
+    SparsityTools::distribute_sparsity_pattern( sparsity_pattern_velocity ,
                                dof_handler_velocity.n_locally_owned_dofs_per_processor(),
                                communicator,
                                locally_relevant_velocity_dofs);
 
-  //pout << "initialize vel_Laplace_plus_Mass" << std::endl;
-    vel_Laplace_plus_Mass.reinit(locally_owned_velocity_dofs,dsp,communicator);
+    vel_Laplace_plus_Mass.reinit(locally_owned_velocity_dofs,
+                                 sparsity_pattern_velocity,
+                                 communicator);
 
     for (unsigned int d = 0; d < dim; ++d){
-    //pout << "initialize vel_it_matrix[" << d << "]" << std::endl;
-      vel_it_matrix[d].reinit(locally_owned_velocity_dofs,dsp,communicator);
+      vel_it_matrix[d].reinit(locally_owned_velocity_dofs,
+                              sparsity_pattern_velocity,
+                              communicator);
       }
 
-  //pout << "initialize vel_Mass" << std::endl;
-    vel_Mass.reinit(locally_owned_velocity_dofs,dsp,communicator);
-  //pout << "initialize vel_Laplace" << std::endl;
-    vel_Laplace.reinit(locally_owned_velocity_dofs,dsp,communicator);
-  //pout << "initialize vel_Advection" << std::endl;
-    vel_Advection.reinit(locally_owned_velocity_dofs,dsp,communicator);
+    vel_Mass.reinit(locally_owned_velocity_dofs,
+                    sparsity_pattern_velocity,
+                    communicator);
+    vel_Laplace.reinit(locally_owned_velocity_dofs,
+                       sparsity_pattern_velocity,
+                       communicator);
+    vel_Advection.reinit(locally_owned_velocity_dofs,
+                         sparsity_pattern_velocity,
+                         communicator);
   }
 
   // The initialization of the matrices that act on the pressure space is
@@ -900,24 +913,30 @@ namespace Step35
     pout << "------------- set boundary constraints on pressure ------------" << std::endl;
     set_boundary_constraints_pressure();
     pout << "------------- initialize pressure matrixes ------------" << std::endl;
-    DynamicSparsityPattern dsp(dof_handler_pressure.n_dofs(),
-                               dof_handler_pressure.n_dofs());
-    DoFTools::make_sparsity_pattern(dof_handler_pressure,
-                                    dsp,
-                                    constraints_pressure,
-                                    /*keep_constrained_dofs = */ true
-                                    );
-    SparsityTools::distribute_sparsity_pattern(   dsp,                 
+
+      sparsity_pattern_pressure.reinit(dof_handler_pressure.n_dofs(),
+                                 dof_handler_pressure.n_dofs());
+      DoFTools::make_sparsity_pattern(dof_handler_pressure,
+                                      sparsity_pattern_pressure,
+                                      constraints_pressure,
+                                      /*keep_constrained_dofs = */ true
+                                      );
+
+    SparsityTools::distribute_sparsity_pattern(
+            sparsity_pattern_pressure,                 
             dof_handler_pressure.n_locally_owned_dofs_per_processor(), 
             communicator,
             locally_relevant_pressure_dofs                             
             );
-  //pout << "initialize pres_Laplace" << std::endl;
-    pres_Laplace.reinit(locally_owned_pressure_dofs,dsp,communicator);
-  //pout << "initialize pres_iterative" << std::endl;
-    pres_iterative.reinit(locally_owned_pressure_dofs,dsp,communicator);
-  //pout << "initialize pres_Mass" << std::endl;
-    pres_Mass.reinit(locally_owned_pressure_dofs,dsp,communicator);
+    pres_Laplace.reinit(locally_owned_pressure_dofs,
+                        sparsity_pattern_pressure,
+                        communicator);
+    pres_iterative.reinit(locally_owned_pressure_dofs,
+                        sparsity_pattern_pressure,
+                        communicator);
+    pres_Mass.reinit(locally_owned_pressure_dofs,
+                        sparsity_pattern_pressure,
+                        communicator);
   }
 
 
@@ -931,17 +950,17 @@ namespace Step35
   void NavierStokesProjection<dim>::initialize_gradient_operator()
   {
     pout << "------------- initialize gradient_operators ------------" << std::endl;
-      DynamicSparsityPattern dsp(dof_handler_velocity.n_dofs(),  
+      sparsity_pattern_pres_vel.reinit(dof_handler_velocity.n_dofs(),  
                                  dof_handler_pressure.n_dofs()); 
       DoFTools::make_sparsity_pattern(dof_handler_velocity,      
                                       dof_handler_pressure,      
-                                      dsp);
-    SparsityTools::distribute_sparsity_pattern(   dsp,                        // DynamicSparsityPattern &  	dsp,           
+                                      sparsity_pattern_pres_vel);
+    SparsityTools::distribute_sparsity_pattern(   
+                   sparsity_pattern_pres_vel,                        // DynamicSparsityPattern &  	dsp,           
                    dof_handler_velocity.n_locally_owned_dofs_per_processor(), // const std::vector<unsigned int>&  rows_per_cpu 
                    communicator,                                                                                                 
                    locally_relevant_velocity_dofs);                           // const IndexSet &  	my_range 
 
-  //pout << "init task and scratch data" << std::endl;
     InitGradPerTaskData per_task_data(0,
                                       fe_velocity.dofs_per_cell,
                                       fe_pressure.dofs_per_cell);
@@ -954,13 +973,11 @@ namespace Step35
 
     for (unsigned int d = 0; d < dim; ++d)
       {
-      //pout << "init pres_Diff dim " <<d<< std::endl;
         pres_Diff[d].reinit(locally_owned_velocity_dofs,  // const IndexSet & local_rows
                             locally_owned_pressure_dofs,  // const IndexSet & local_columns
-                            dsp,                          // const SparsityPatternType & sparsity_pattern
+                            sparsity_pattern_pres_vel,                          // const SparsityPatternType & sparsity_pattern
                             communicator);
         per_task_data.d = d;
-      //pout << "first WorkStream run for dim " <<d<< std::endl;
         WorkStream::run(
           IteratorPair(IteratorTuple(CellFilter(IteratorFilters::LocallyOwnedCell(), dof_handler_velocity.begin_active()),
                                      CellFilter(IteratorFilters::LocallyOwnedCell(), dof_handler_pressure.begin_active())  )),
@@ -972,7 +989,6 @@ namespace Step35
           scratch_data,
           per_task_data);
       }
-  //pout << "done init gradients" << std::endl;
   }
 
   template <int dim>
@@ -1042,7 +1058,7 @@ namespace Step35
 
     const auto n_steps = static_cast<unsigned int>((T - t_0) / dt);
     vel_exact.set_time(2. * dt);
-  //output_results(1);
+    output_results(1);
     for (unsigned int n = 2; n <= n_steps; ++n)
       {
   //    if (n % output_interval == 0)
@@ -1065,7 +1081,7 @@ namespace Step35
         update_pressure((n == 2));
         vel_exact.advance_time(dt);
       }
-  //output_results(n_steps);
+    output_results(n_steps);
   }
 
 
@@ -1075,7 +1091,6 @@ namespace Step35
   {
     for (unsigned int d = 0; d < dim; ++d)
       {
-      //pout << "     computing u_star for dim "<< d << std::endl;
         u_star[d].equ(2., u_n[d]);
         u_star[d] -= u_n_minus_1[d];
       }
@@ -1113,7 +1128,6 @@ namespace Step35
       //DoFTools::make_hanging_node_constraints(dof_handler_velocity,
       //                                        constraints_velocity);
         vel_exact.set_component(d);
-      //pout << "      interpolate boundaries dim " << d << std::endl;
         // Like hanging nodes, Dirichlet boundary conditions are as well a 
         // constraint on the degrees of freedom, we use VectorTools::interpolate_boundary_values()
         // to return boundary conditions constraints and store them in 'constraints_velocity'
@@ -1178,8 +1192,6 @@ namespace Step35
     pres_tmp.equ(-1., pres_n);
     pres_tmp.add(-4. / 3., phi_n, 1. / 3., phi_n_minus_1);
 
-    set_boundary_constraints_velocity();
-
     assemble_advection_term();
 
 
@@ -1202,8 +1214,10 @@ namespace Step35
       //                                   vel_it_matrix[d],// system_matrix
       //                                   u_n[d],          // solution
       //                                   force[d],true);       // rhs
-      //pout << "      diffusion of dim " << d << " done" << std::endl;
       }
+
+    set_boundary_constraints_velocity();
+
 
 
     Threads::TaskGroup<void> tasks;
@@ -1213,13 +1227,14 @@ namespace Step35
           pout << "     reinit prec_velocity[" <<d<<"]"<< std::endl;
           prec_velocity[d].initialize(vel_it_matrix[d],
                                    LA::MPI::PreconditionILU::AdditionalData::AdditionalData(vel_diag_strength, vel_off_diagonals) );
-                                   //   SparseILU<double>::AdditionalData(
-                                   //     vel_diag_strength, vel_off_diagonals));
+                                   //LA::MPI::PreconditionILU::AdditionalData::AdditionalData() );
+                                   //,   SparseILU<double>::AdditionalData(
+                                   //     vel_diag_strength, vel_off_diagonals)
+                                   //);
         tasks += Threads::new_task(
           &NavierStokesProjection<dim>::diffusion_component_solve, *this, d);
       }
     tasks.join_all();
-  //pout << "      -------- diffusion_step done ---------" << std::endl;
   }
 
 
@@ -1228,17 +1243,19 @@ namespace Step35
   void
   NavierStokesProjection<dim>::diffusion_component_solve(const unsigned int d)
   {
-  //pout << "      Navier Stokes Projection:: diffusion_component_solve dim " << d << std::endl;
     SolverControl solver_control(vel_max_its, vel_eps * force[d].l2_norm());
+   pout << "solver control (" << vel_max_its << "," << vel_eps * force[d].l2_norm() << ")"<< std::endl;
+  //LA::MPI::PreconditionAMG amg_preconditionner;
+  //amg_preconditionner.initialize(vel_it_matrix[d]);
     LA::SolverGMRES gmres(solver_control,
                           LA::SolverGMRES::AdditionalData(vel_Krylov_size));
   //SolverGMRES<LA::MPI::Vector> gmres(solver_control,
   //                    SolverGMRES<LA::MPI::Vector>::AdditionalData(vel_Krylov_size));
     pout << "        solve diffusion equation with GMRES for dim " << d <<  std::endl;
-    gmres.solve(vel_it_matrix[d], u_n[d], force[d], prec_velocity[d]);
+    //gmres.solve(vel_it_matrix[d], u_n[d], force[d], prec_velocity[d]);
+  //gmres.solve(vel_it_matrix[d], u_n[d], force[d], amg_preconditionner);
     pout << "        and distribute constraints on velocity solution for dim " << d << std::endl;
     constraints_velocity.distribute (u_n[d]);
-  //pout << "      Navier Stokes Projection:: diffusion_component_solve dim " << d << " done " << std::endl;
   }
 
 
@@ -1252,7 +1269,6 @@ namespace Step35
   template <int dim>
   void NavierStokesProjection<dim>::assemble_advection_term()
   {
-  //pout << "    assemble_advection_term" << std::endl;
     vel_Advection = 0.;
     AdvectionPerTaskData data(fe_velocity.dofs_per_cell);
     AdvectionScratchData scratch(fe_velocity,
@@ -1260,7 +1276,6 @@ namespace Step35
                                  update_values | update_JxW_values |
                                    update_gradients);
     //decltype(CellFilter(IteratorFilters::LocallyOwnedCell(), dof_handler_velocity.begin_active()))::foo= 1;
- //pout << "      WorkStream::run extrapolation step" << std::endl;
     WorkStream::run(
       CellFilter(IteratorFilters::LocallyOwnedCell(), dof_handler_velocity.begin_active() ),
       CellFilter(IteratorFilters::LocallyOwnedCell(), dof_handler_velocity.end() ),
@@ -1269,7 +1284,6 @@ namespace Step35
       &NavierStokesProjection<dim>::copy_advection_local_to_global,
       scratch,
       data);
- //pout << "      assemble_advection_term done." << std::endl;
   }
 
 
@@ -1322,17 +1336,17 @@ namespace Step35
   void NavierStokesProjection<dim>::copy_advection_local_to_global(
     const AdvectionPerTaskData &data)
   {
-  for (unsigned int i = 0; i < fe_velocity.dofs_per_cell; ++i)
-    for (unsigned int j = 0; j < fe_velocity.dofs_per_cell; ++j)
-      vel_Advection.add(data.local_dof_indices[i],
-                        data.local_dof_indices[j],
-                        data.local_advection(i, j));
+    for (unsigned int i = 0; i < fe_velocity.dofs_per_cell; ++i)
+      for (unsigned int j = 0; j < fe_velocity.dofs_per_cell; ++j)
+        vel_Advection.add(data.local_dof_indices[i],
+                          data.local_dof_indices[j],
+                          data.local_advection(i, j));
 
-  //  constraints_velocity.distribute_local_to_global(
-  //                       data.local_advection,
-  //                       data.local_dof_indices,
-  //                       vel_Advection);
-  }
+  //    constraints_velocity.distribute_local_to_global(
+  //                         data.local_advection,
+  //                         data.local_dof_indices,
+  //                         vel_Advection);
+  }     
 
 
 
@@ -1341,7 +1355,6 @@ namespace Step35
   template <int dim>
   void NavierStokesProjection<dim>::set_boundary_constraints_pressure()
   {
-    //pout << "    set boundary constraints on pressure " << std::endl;
     constraints_pressure.clear();
     DoFTools::make_hanging_node_constraints(dof_handler_pressure,
                                                 constraints_pressure);
@@ -1365,9 +1378,7 @@ namespace Step35
     phi_n_minus_1 = phi_n;
 
     static std::map<types::global_dof_index, double> bval;
-    if (reinit_prec)
-
-    //MatrixTools::apply_boundary_values(bval, pres_iterative, phi_n, pres_tmp);
+    set_boundary_constraints_pressure();
 
     if (reinit_prec)
       prec_pres_Laplace.initialize(pres_iterative,
@@ -1450,11 +1461,15 @@ namespace Step35
              ((dim + 1) * dof_handler_velocity.n_dofs() +
               dof_handler_pressure.n_dofs()),
            ExcInternalError());
-    Vector<double> joint_solution(joint_dof_handler.n_dofs());
+    TrilinosWrappers::MPI::Vector joint_solution;
+    joint_solution.reinit(joint_dof_handler.locally_owned_dofs(),
+                          MPI_COMM_WORLD);
+
     std::vector<types::global_dof_index> loc_joint_dof_indices(
       joint_fe.dofs_per_cell),
       loc_vel_dof_indices(fe_velocity.dofs_per_cell),
       loc_pres_dof_indices(fe_pressure.dofs_per_cell);
+
     typename DoFHandler<dim>::active_cell_iterator
       joint_cell = joint_dof_handler.begin_active(),
       joint_endc = joint_dof_handler.end(),
@@ -1462,6 +1477,8 @@ namespace Step35
       pres_cell  = dof_handler_pressure.begin_active();
     for (; joint_cell != joint_endc; ++joint_cell, ++vel_cell, ++pres_cell)
       {
+       if(joint_cell->is_locally_owned())
+       {
         joint_cell->get_dof_indices(loc_joint_dof_indices);
         vel_cell->get_dof_indices(loc_vel_dof_indices);
         pres_cell->get_dof_indices(loc_pres_dof_indices);
@@ -1492,10 +1509,21 @@ namespace Step35
               default:
                 Assert(false, ExcInternalError());
             }
+       }
       }
+    joint_solution.compress(VectorOperation::insert);
+    IndexSet locally_relevant_joint_dofs(joint_dof_handler.n_dofs());
+    DoFTools::extract_locally_relevant_dofs(joint_dof_handler,
+                                            locally_relevant_joint_dofs);
+    TrilinosWrappers::MPI::Vector locally_relevant_joint_solution;
+    locally_relevant_joint_solution.reinit(locally_relevant_joint_dofs,
+                                           MPI_COMM_WORLD);
+    locally_relevant_joint_solution = joint_solution;
+    
+
     std::vector<std::string> joint_solution_names(dim, "v");
-    joint_solution_names.emplace_back("p");
-    joint_solution_names.emplace_back("rot_u");
+                             joint_solution_names.emplace_back("p");
+                             joint_solution_names.emplace_back("rot_u");
     DataOut<dim> data_out;
     data_out.attach_dof_handler(joint_dof_handler);
     std::vector<DataComponentInterpretation::DataComponentInterpretation>
@@ -1505,7 +1533,7 @@ namespace Step35
       DataComponentInterpretation::component_is_scalar;
     component_interpretation[dim + 1] =
       DataComponentInterpretation::component_is_scalar;
-    data_out.add_data_vector(joint_solution,
+    data_out.add_data_vector(locally_relevant_joint_solution,
                              joint_solution_names,
                              DataOut<dim>::type_dof_data,
                              component_interpretation);
@@ -1532,8 +1560,8 @@ namespace Step35
     TrilinosWrappers::SolverDirect::AdditionalData solver_data(false);  
     TrilinosWrappers::SolverDirect  prec_vel_mass(solver_control,solver_data);
     Assert(dim == 2, ExcNotImplemented());
-    if (reinit_prec)
-      prec_vel_mass.initialize(vel_Mass);
+  //if (reinit_prec)
+  //  prec_vel_mass.initialize(vel_Mass);
 
     FEValues<dim>      fe_val_vel(fe_velocity,
                              quadrature_velocity,
@@ -1564,7 +1592,7 @@ namespace Step35
           rot_u_tmp(ldi[i]) += loc_rot(i);
       }
 
-    prec_vel_mass.solve(rot_u,rot_u_tmp);
+    //prec_vel_mass.solve(rot_u,rot_u_tmp);
   }
 } // namespace Step35
 
